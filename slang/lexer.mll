@@ -18,6 +18,8 @@ let int_dec_reg_exp = ['0'-'9']+
 let int_hex_reg_exp = ("0x" | "0X")(['A'-'F' '0'-'9']+ | ['a' - 'f' '0'-'9']+)
 let int_oct_reg_exp = ("0o" | "0O")(['0' - '7']+)
 
+let int_reg_exp = (int_dec_reg_exp | int_hex_reg_exp | int_oct_reg_exp)
+
 rule token = parse
   | [' ' '\t'] { token lexbuf }
   | '(' { LPAREN }
@@ -63,9 +65,7 @@ rule token = parse
   | "bool" { BOOL }
   | "int" { INTTYPE }
   | "unit" { UNITTYPE }
-  | int_dec_reg_exp { INT (int_of_string (Lexing.lexeme lexbuf)) }
-  | int_hex_reg_exp { INT (int_of_string (Lexing.lexeme lexbuf)) } (*int_of_string handles other bases, given a prefix*)
-  | int_oct_reg_exp { INT (int_of_string (Lexing.lexeme lexbuf)) }
+  | int_reg_exp { INT (int_of_string (Lexing.lexeme lexbuf)) }
   | ident_reg_exp { IDENT (Lexing.lexeme lexbuf) }
   | "(*" { comment lexbuf; token lexbuf }
   | newline { next_line lexbuf; token lexbuf } 
