@@ -173,20 +173,11 @@ let rec valueApply = function
     | Ast.App(e1, e2) ->
         let e1' = valueApply e1 in
         let e2' = valueApply e2 in
-        match e1' with
-            | lambda(x, e3) when (isImmutable e2') -> valueApply (varToExpr x e2' e1')
+        (match e1' with
+            | Ast.Lambda(x, e3) when (isImmutable e2') -> valueApply (varToExpr x e2' e1')
             | nonApplicable -> Ast.App(e1', e2')
+        )
     | other -> propagate valueApply other
-
-    | Ast.App(Lambda(x, e1), e2) ->
-      let e2' = valueApply e2 in
-      if isImmutable e2' then 
-        (*If operand is immutable, apply it to the lambda*)
-        valueApply (varToExpr x e2' e1)
-      else
-        Ast.App(valueApply e1, e2')
-    | other -> propagate valueApply other
-
 
 let rec lambdaContract = function
     | Ast.LetFun(f, (x, e1), e2) ->
