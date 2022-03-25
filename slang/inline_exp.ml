@@ -6,7 +6,13 @@ Only dares to expand applications if operand is value, in order to avoid side ef
 Could support complex operands with a imperative style variable binding,
   However currently variable binding is done by creating a function, 
   which defeats the purpose
-  
+
+Could also try to evaluate operations as well to get more complete constant folding
+
+Made in front-end due to easy access to whether functions are recursive or not
+  probably would be better to implement it backend, 
+  but that would require reanalysing functions for recursion
+
 Works in 3 phases:
   Expand non-recursive function calls to lambdas,
   Apply immutable operands to lambdas and inline then
