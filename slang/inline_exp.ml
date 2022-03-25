@@ -198,4 +198,3 @@ let rec lambdaContract = function
         else (* No references to f left, we can remove function block*)
           lambdaContract e2'
     | other -> propagate lambdaContract other
-
