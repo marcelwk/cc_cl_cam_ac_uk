@@ -41,7 +41,7 @@ let translate e =
 
 let inlineExpand e =
     if Option.simple_inline_expansion then
-        let e' = e
+        let e' = Inline_exp.expand e
         in let _ = peek "After inline expansion" e Ast.string_of_expr
         in e'
     else e
