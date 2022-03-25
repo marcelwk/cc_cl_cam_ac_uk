@@ -41,9 +41,14 @@ let translate e =
 
 let inlineExpand e =
     if Option.simple_inline_expansion then
-        let e' = Inline_exp.expand e
-        in let _ = peek "After inline expansion" e Ast.string_of_expr
-        in e'
+        let e1 = Inline_exp.lambdaExpand e
+        in let _ = peek "(Inline expansion) After expanding to lambdas" e1 Ast.string_of_expr 
+        in let e2 = Inline_exp.valueApply e1
+        in let _ = peek "(Inline expansion) After applying values" e2 Ast.string_of_expr 
+        in let e3 = Inline_exp.lambdaContract e2 
+        in let _ = peek "(Inline expansion) After contracting lambdas back together" e3 Ast.string_of_expr
+        in e3
+
     else e
 
 (* the front end *)  

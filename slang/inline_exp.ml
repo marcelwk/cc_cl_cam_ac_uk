@@ -189,9 +189,3 @@ let rec lambdaContract = function
           lambdaContract e2'
     | other -> propagate lambdaContract other
 
-let expand e = 
-  let e1 = lambdaExpand e in
-  let _ = peak "After lambda expansion" e1 Ast.string_of_expr in
-  let e2 = valueApply e1 in
-  let _ = peak "After applying immutables" e2 Ast.string_of_expr in 
-  lambdaContract e2
