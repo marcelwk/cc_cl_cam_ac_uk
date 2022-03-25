@@ -55,8 +55,8 @@ let rec exprToVar x expr = function
     | e when (e=expr)                                 -> (Ast.Var(x), true)
     (*variable got new value, dont progress*)
     | Ast.Lambda(y, e)              when (y=x)        -> (Ast.Lambda(x, e), false) 
-    | Ast.LetFun(f, (y, e1), e2)    when (f=x)||(y=x) -> (Ast.LetFun(f, (x, e1), e2), true)
-    | Ast.LetRecFun(f, (y, e1), e2) when (f=x)||(y=x) -> (Ast.LetRecFun(f, (x, e1), e2), true)
+    | Ast.LetFun(f, (y, e1), e2)    when (f=x)||(y=x) -> (Ast.LetFun(f, (y, e1), e2), true)
+    | Ast.LetRecFun(f, (y, e1), e2) when (f=x)||(y=x) -> (Ast.LetRecFun(f, (y, e1), e2), true)
 
     (*propagation*)
     | Ast.UnaryOp(op, e) -> 
