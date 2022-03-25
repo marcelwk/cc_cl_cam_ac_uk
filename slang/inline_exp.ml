@@ -4,8 +4,8 @@ Only dares to expand applications if operand is value, in order to avoid side ef
   so it in practice mostly does constant propagation 
 
 Could support complex operands with a imperative style variable binding,
-  However currently variable binding is done by creating a function, 
-  which defeats the purpose
+  However currently variable binding is done by creating a new function, 
+  which defeats the purpose of function inling 
 
 Could also try to evaluate operations as well to get more complete constant folding
 
@@ -59,7 +59,7 @@ let rec exprToVar x expr = function
     (* Replaces expr with var(x), and returns a tuple of the result and boolean 
     whether any replacements were made *)
     | e when (e=expr)                                 -> (Ast.Var(x), true)
-    (*variable got new value, dont progress*)
+    (*variable got new value, dont continue*)
     | Ast.Lambda(y, e)              when (y=x)        -> (Ast.Lambda(x, e), false) 
     | Ast.LetFun(f, (y, e1), e2)    when (f=x)||(y=x) -> (Ast.LetFun(f, (y, e1), e2), true)
     | Ast.LetRecFun(f, (y, e1), e2) when (f=x)||(y=x) -> (Ast.LetRecFun(f, (y, e1), e2), true)
@@ -169,6 +169,10 @@ let rec isImmutable = function
 
 let rec lambdaExpand = function
   (* replace occurences of functions with their lambda *)
+  (* Keeps the LetFun statement to remember where functions was defined for contracting,
+      This Letfun get in the way of some applications, for example function g in example/closure_add.slang
+      Some other way of remembering where functions were defined would be more effective
+  *)
     | Ast.LetFun(f, (x, e1), e2) -> 
         let e1' = lambdaExpand e1 in
         let e2' = lambdaExpand (varToExpr f (Lambda(x, e1')) e2) in
