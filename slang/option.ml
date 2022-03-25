@@ -39,7 +39,7 @@ let option_spec = [
      ("-stackmax",  Arg.Set_int stack_max, "set max stack size (default = 1000)");
      ("-heapmax",  Arg.Set_int heap_max, "set max heap size (default = 1000)");
      ("-t",    Arg.Set run_tests,     "run all test/*.slang with each selected interpreter, report unexpected outputs (silent otherwise)");
-     ("-sie", Arg.Set simple_inline_expansion, "use a simple inline expansion")
+     ("-ie", Arg.Set simple_inline_expansion, "use a simple inline expansion")
     ]
 let usage_msg = "Usage: slang.byte [options] [<file>]\nOptions are:"
 
