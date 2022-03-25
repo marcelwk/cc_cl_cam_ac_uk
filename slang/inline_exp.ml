@@ -1,22 +1,22 @@
 (*
 Very simple inline expander
 Only dares to expand applications if operand is value, in order to avoid side effects,
-  so it in practice mostly does constant propagation 
+so it in practice mostly does constant propagation 
 
 Could support complex operands with a imperative style variable binding,
-  However currently variable binding is done by creating a new function, 
-  which defeats the purpose of function inling 
+However currently variable binding is done by creating a new function, 
+which defeats the purpose of function inling 
 
 Could also try to evaluate operations as well to get more complete constant folding
 
 Made in front-end due to easy access to whether functions are recursive or not
-  probably would be better to implement it backend, 
-  but that would require reanalysing functions for recursion
+probably would be better to implement it backend, 
+but that would require reanalysing functions for recursion
 
 Works in 3 phases:
-  Expand non-recursive function calls to lambdas,
-  Apply immutable operands to lambdas and inline then
-  Contract remaining lambdas to function calls
+Expand non-recursive function calls to lambdas,
+Apply immutable operands to lambdas and inline then
+Contract remaining lambdas to function calls
 
 *)
 let rec propagate f = function 
@@ -170,8 +170,8 @@ let rec isImmutable = function
 let rec lambdaExpand = function
   (* replace occurences of functions with their lambda *)
   (* Keeps the LetFun statement to remember where functions was defined for contracting,
-      This Letfun get in the way of some applications, for example function g in example/closure_add.slang
-      Some other way of remembering where functions were defined would be more effective
+     This Letfun gets in the way of some applications, for example function g in example/closure_add.slang.
+     Some other way of remembering where functions were defined would be more effective
   *)
     | Ast.LetFun(f, (x, e1), e2) -> 
         let e1' = lambdaExpand e1 in
