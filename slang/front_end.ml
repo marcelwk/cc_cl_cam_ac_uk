@@ -39,6 +39,13 @@ let translate e =
     in let _ = peek "After translation" e' Ast.string_of_expr 
     in e' 
 
+let inlineExpand e =
+    if Option.simple_inline_expansion then
+        let e' = e
+        in let _ = peek "After inline expansion" e Ast.string_of_expr
+        in e'
+    else e
+
 (* the front end *)  
-let front_end file = translate (check (parse (init_lexbuf file)))
+let front_end file = inlineExpand (translate (check (parse (init_lexbuf file))))
     
