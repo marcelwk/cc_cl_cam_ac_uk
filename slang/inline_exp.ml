@@ -9,7 +9,7 @@ Could support complex operands with a imperative style variable binding,
   
 Works in 3 phases:
   Expand non-recursive function calls to lambdas,
-  Apply value operands to lambdas
+  Apply immutable operands to lambdas and inline then
   Contract remaining lambdas to function calls
 
 *)
@@ -44,8 +44,8 @@ let rec varToExpr x expr = function
     | Ast.Var(y) when (x=y)                           -> expr
     (*variable got new value, dont continue*)
     | Ast.Lambda(y, e)              when(y=x)         -> Ast.Lambda(y, e) 
-    | Ast.LetFun(f, (y, e1), e2)    when (f=x)||(y=x) -> Ast.LetFun(f, (x, e1), e2)
-    | Ast.LetRecFun(f, (y, e1), e2) when (f=x)||(y=x) -> Ast.LetRecFun(f, (x, e1), e2)
+    | Ast.LetFun(f, (y, e1), e2)    when (f=x)||(y=x) -> Ast.LetFun(f, (y, e1), e2)
+    | Ast.LetRecFun(f, (y, e1), e2) when (f=x)||(y=x) -> Ast.LetRecFun(f, (y, e1), e2)
 
     | other                                           -> propagate (varToExpr x expr) other
   
@@ -170,11 +170,12 @@ let rec lambdaExpand = function
     | other -> propagate lambdaExpand other
 
 let rec valueApply = function
+    (* Inline lambda applications, if operand is immutable *)
     | Ast.App(e1, e2) ->
         let e1' = valueApply e1 in
         let e2' = valueApply e2 in
         (match e1' with
-            | Ast.Lambda(x, e3) when (isImmutable e2') -> valueApply (varToExpr x e2' e1')
+            | Ast.Lambda(x, e3) when (isImmutable e2') -> valueApply (varToExpr x e2' e3)
             | nonApplicable -> Ast.App(e1', e2')
         )
     | other -> propagate valueApply other
