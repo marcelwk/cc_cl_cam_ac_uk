@@ -40,8 +40,9 @@ and propagateList f = function
 
 
 let rec varToExpr x expr = function
+    (*Replace var(x) with expr*)
     | Ast.Var(y) when (x=y)                           -> expr
-    (*variable got new value, dont progress*)
+    (*variable got new value, dont continue*)
     | Ast.Lambda(y, e)              when(y=x)         -> Ast.Lambda(y, e) 
     | Ast.LetFun(f, (y, e1), e2)    when (f=x)||(y=x) -> Ast.LetFun(f, (x, e1), e2)
     | Ast.LetRecFun(f, (y, e1), e2) when (f=x)||(y=x) -> Ast.LetRecFun(f, (x, e1), e2)
@@ -57,7 +58,7 @@ let rec exprToVar x expr = function
     | Ast.LetFun(f, (y, e1), e2)    when (f=x)||(y=x) -> (Ast.LetFun(f, (x, e1), e2), true)
     | Ast.LetRecFun(f, (y, e1), e2) when (f=x)||(y=x) -> (Ast.LetRecFun(f, (x, e1), e2), true)
 
-
+    (*propagation*)
     | Ast.UnaryOp(op, e) -> 
       let (e', r) = exprToVar x expr e in 
       (Ast.UnaryOp(op, e'), r)
@@ -161,7 +162,7 @@ let rec isImmutable = function
     | other           -> false
 
 let rec lambdaExpand = function
-  (* replace occurences of var(f) with Lambda(x, e1), then traverse the result*)
+  (* replace occurences of functions with their lambda *)
     | Ast.LetFun(f, (x, e1), e2) -> 
         let e1' = lambdaExpand e1 in
         let e2' = lambdaExpand (varToExpr f (Lambda(x, e1')) e2) in
@@ -170,14 +171,9 @@ let rec lambdaExpand = function
 
 let rec valueApply = function
     | Ast.App(Lambda(x, e1), e2) ->
-      (* Traverse operand, 
-        if operand turns out to be immutable,
-          replace occurences of var(operand) with its value, and remove App, traverse reuslt
-        else
-          traverse as usual
-        *)
       let e2' = valueApply e2 in
-      if isImmutable e2' then
+      if isImmutable e2' then 
+        (*If operand is immutable, apply it to the lambda*)
         valueApply (varToExpr x e2' e1)
       else
         Ast.App(valueApply e1, e2')
@@ -186,14 +182,16 @@ let rec valueApply = function
 
 let rec lambdaContract = function
     | Ast.LetFun(f, (x, e1), e2) ->
-        let e1' = lambdaContract e1 in
-        let (e2', r) = exprToVar f (Lambda(x, e1')) e2 in
+        let (e2', r) = exprToVar f (Lambda(x, e1)) e2 in
         if r then
-          Ast.LetFun(f, (x, e1'), lambdaContract e2')
+          Ast.LetFun(f, (x, lambdaContract e1), lambdaContract e2')
         else (* No references to f left, we can remove function block*)
           lambdaContract e2'
     | other -> propagate lambdaContract other
+
 let expand e = 
-  let e_1 = lambdaExpand e in
-  let e_2 = valueApply e_1 in
-  lambdaContract e_2
+  let e1 = lambdaExpand e in
+  let _ = peak "After lambda expansion" e1 Ast.string_of_expr in
+  let e2 = valueApply e1 in
+  let _ = peak "After applying immutables" e2 Ast.string_of_expr in 
+  lambdaContract e2
